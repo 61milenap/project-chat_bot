@@ -31,7 +31,7 @@ def get_keyboard():
     buttons = [
         types.InlineKeyboardButton(text=str(i), callback_data=("num_" + str(i))) for i in range(1, 27)
     ]
-    buttons.append(types.InlineKeyboardButton(text="Похрен", callback_data=("num_" + str(random.randint(1, 27)))))
+    buttons.append(types.InlineKeyboardButton(text="Любое", callback_data=("num_" + str(random.randint(1, 27)))))
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(*buttons)
     return keyboard

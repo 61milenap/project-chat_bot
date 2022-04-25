@@ -2,9 +2,7 @@ from aiogram import Bot, Dispatcher, executor, types
 import sqlite3
 import random
 import time
-from get_message import send_message
-
-# from pprint import pprint
+#from pprint import pprint
 
 with open("config.txt") as config:
     token = config.readline().strip()
@@ -21,6 +19,7 @@ db = sqlite3.connect("data.db")
 
 # Create Cursor for db
 cur = db.cursor()
+
 
 
 def get_task(words_d, blackWords_d):
@@ -57,10 +56,9 @@ def get_variant():
 
 def find_in_data(id_user):
     global cur
-    res = cur.execute("SELECT * FROM users_info WHERE id = ?", (str(id_user),)).fetchall()
+    res = cur.execute("SELECT * FROM users_info WHERE id = ?", (str(id_user), )).fetchall()
 
     return res != []
-
 
 def keyboard_no_yes():
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
@@ -68,7 +66,6 @@ def keyboard_no_yes():
     key_no = types.InlineKeyboardButton(text='Нет', callback_data='Нет')
     keyboard.add(key_yes, key_no)
     return keyboard
-
 
 def keyboard_answer():
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
@@ -81,30 +78,6 @@ def keyboard_answer():
     return keyboard
 
 
-@dp.message_handler(commands="start")
-async def start(message: types.Message):
-    if not find_in_data(message.from_user.id):
-        id_user = message.from_user.id
-        score = 0
-        temp = 0
-        num = -1
-        activity = 0
-        first_name = message.from_user.first_name
-        last_name = message.from_user.last_name
-        cur.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (str(id_user), score, temp, num, activity, first_name, last_name))
-        send_message(f"{first_name} зарегистрировался в вашем боте!")
-        db.commit()
-    activity = 0
-    temp = 0
-    num = -1
-    cur.execute("UPDATE users_info SET activity = ?, temp = ?, num = ? WHERE id = ?",
-                (activity, temp, num, message.from_user.id))
-    db.commit()
-    text = f"🖐🏾 Привет, <b>{message.from_user.first_name}</b>.\nНачать тренировку?"
-    keyboard = keyboard_no_yes()
-    await message.answer(text, parse_mode="html", reply_markup=keyboard)
-
 
 @dp.message_handler(commands="record")
 async def record(message: types.Message):
@@ -112,23 +85,21 @@ async def record(message: types.Message):
         text = f"Вас нет в базе данных! Нажмите на /start, {message.from_user.id.first_name}"
         await message.answer(text, parse_mode="html")
         return
-    record = int(
-        cur.execute("SELECT score FROM users_info WHERE id = ?", (str(message.from_user.id),)).fetchall()[0][0])
+    record = int(cur.execute("SELECT score FROM users_info WHERE id = ?", (str(message.from_user.id), )).fetchall()[0][0])
     text = f"🏋🏿‍♀️ Ваш рекорд: {record}"
     await message.answer(text, parse_mode="html")
 
 
 @dp.message_handler(commands="users")
 async def users(message: types.Message):
-    res = cur.execute("SELECT * FROM users_info").fetchall()
+    res = cur.execute("SELECT * FROM users_info").fetchall() 
     text = f"📊 Количество пользователей: {len(res)}"
     await message.answer(text, parse_mode="html")
 
 
 @dp.message_handler(commands="update")
 async def update(message: types.Message):
-    cur.execute("UPDATE users_info SET first_name = ?, last_name = ? WHERE id = ?",
-                (message.from_user.first_name, message.from_user.last_name, message.from_user.id))
+    cur.execute("UPDATE users_info SET first_name = ?, last_name = ? WHERE id = ?", (message.from_user.first_name, message.from_user.last_name, message.from_user.id))
     db.commit()
     text = f"😉 Имя пользователя обновлено!"
     await message.answer(text, parse_mode="html")
@@ -156,22 +127,18 @@ async def leaderboard(message: types.Message):
             text += f"{first_name} — {score}\n"
     await message.answer(text, parse_mode="html")
 
-
 @dp.message_handler()
 async def training(message: types.Message):
     if not find_in_data(str(message.from_user.id)):
         text = f"Вас нет в базе данных! Нажмите на /start, {message.from_user.first_name}"
         await message.answer(text, parse_mode="html")
         return
-    activity = int(
-        cur.execute("SELECT activity FROM users_info WHERE id = ?", (str(message.from_user.id),)).fetchall()[0][0])
+    activity = int(cur.execute("SELECT activity FROM users_info WHERE id = ?", (str(message.from_user.id), )).fetchall()[0][0])
     if activity:
         activity = 0
-        num = int(cur.execute("SELECT num FROM users_info WHERE id = ?", (str(message.from_user.id),)).fetchall()[0][0])
-        temp = int(
-            cur.execute("SELECT temp FROM users_info WHERE id = ?", (str(message.from_user.id),)).fetchall()[0][0])
-        score = int(
-            cur.execute("SELECT score FROM users_info WHERE id = ?", (str(message.from_user.id),)).fetchall()[0][0])
+        num = int(cur.execute("SELECT num FROM users_info WHERE id = ?", (str(message.from_user.id), )).fetchall()[0][0])
+        temp = int(cur.execute("SELECT temp FROM users_info WHERE id = ?", (str(message.from_user.id), )).fetchall()[0][0])
+        score = int(cur.execute("SELECT score FROM users_info WHERE id = ?", (str(message.from_user.id), )).fetchall()[0][0])
         if any(message.text == x for x in ["1", "2", "3", "4"]):
             if message.text == str(num + 1):
                 temp += 1
@@ -180,8 +147,7 @@ async def training(message: types.Message):
                 num = -1
                 text = f"✅ <b>Верно!</b> Желаете ли вы продолжить дальше?\n<b>score:{temp}</b>"
                 keyboard = keyboard_no_yes()
-                cur.execute("UPDATE users_info SET activity = ?, num = ?, temp = ?, score = ? WHERE id = ?",
-                            (activity, num, temp, score, str(message.from_user.id)))
+                cur.execute("UPDATE users_info SET activity = ?, num = ?, temp = ?, score = ? WHERE id = ?", (activity, num, temp, score, str(message.from_user.id)))
                 db.commit()
                 await message.answer(text, parse_mode="html", reply_markup=keyboard)
 
@@ -192,23 +158,21 @@ async def training(message: types.Message):
                 text = f"❌ <b>НЕВЕРНО! </b>\n Желаете ли вы начать заново?"
                 keyboard = keyboard_no_yes()
                 num = -1
-                cur.execute("UPDATE users_info SET activity = ?, num = ?, temp = ?, score = ? WHERE id = ?",
-                            (activity, num, temp, score, str(message.from_user.id)))
+                cur.execute("UPDATE users_info SET activity = ?, num = ?, temp = ?, score = ? WHERE id = ?", (activity, num, temp, score, str(message.from_user.id)))
                 db.commit()
                 await message.answer(text, parse_mode="html", reply_markup=keyboard)
         else:
             keyboard = keyboard_answer()
             await message.answer(
-                f"😡 Я тебя не понимаю, дружище. Соберитесь, <b>{message.from_user.first_name}</b>",
-                parse_mode="html", reply_markup=keyboard)
+                         f"😡 Я тебя не понимаю, дружище. Соберитесь, <b>{message.from_user.first_name}</b>",
+                         parse_mode="html", reply_markup=keyboard)
     elif message.text == "Да" or message.text == "Далее" and not activity:
         activity = 1
         keyboard = keyboard_answer()
         text, num = get_variant()
         question = "🕵🏿 Укажите вариант ответа, где ударение выставлено <b>неверно</b>\n"
         text = question + text
-        cur.execute("UPDATE users_info SET activity = ?, num = ? WHERE id = ?",
-                    (activity, num, str(message.from_user.id)))
+        cur.execute("UPDATE users_info SET activity = ?, num = ? WHERE id = ?", (activity, num, str(message.from_user.id)))
         db.commit()
         await message.answer(text, parse_mode="html", reply_markup=keyboard)
     elif message.text == "Нет":
@@ -219,11 +183,11 @@ async def training(message: types.Message):
         await message.answer(text, parse_mode="html", reply_markup=keyboard)
     else:
         await message.answer(
-            f"😡 Я тебя не понимаю, дружище. Соберитесь, <b>{message.from_user.first_name}</b>",
-            parse_mode="html")
+                         f"😡 Я тебя не понимаю, дружище. Соберитесь, <b>{message.from_user.first_name}</b>",
+                         parse_mode="html")
 
 
-# while True:
+#while True:
 #    try:
 executor.start_polling(dp, skip_updates=True)
 #    except Exception as e:

@@ -1,9 +1,6 @@
 from aiogram import Bot, Dispatcher, executor, types
 import sqlite3
 import random
-import time
-
-# from pprint import pprint
 
 with open("config.txt") as config:
     token = config.readline().strip()
@@ -92,7 +89,6 @@ async def start(message: types.Message):
         last_name = message.from_user.last_name
         cur.execute("INSERT INTO users_info VALUES (?, ?, ?, ?, ?, ?, ?)",
                     (str(id_user), score, temp, num, activity, first_name, last_name))
-        #       send_message(f"{first_name} зарегистрировался в вашем боте!")
         db.commit()
     activity = 0
     temp = 0
